@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MindCheck — Test</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="center-shell">
+    <div class="card glass">
+      <div class="topbar">
+        <button id="back" class="icon-btn">←</button>
+        <div class="progress-wrap">
+          <div id="progressText">Question 1 / 15</div>
+          <div class="progress"><div id="progressBar"></div></div>
+        </div>
+        <div class="spacer"></div>
+      </div>
+
+      <div id="qbox" class="qbox">
+        <!-- question injected here -->
+      </div>
+
+      <div id="opts" class="options">
+        <!-- options injected here -->
+      </div>
+
+      <div class="other-wrap">
+        <label class="muted">Other opinion (optional)</label>
+        <textarea id="notes" placeholder="Share anything you'd like..."></textarea>
+      </div>
+
+      <div class="row">
+        <button id="prev" class="btn outline">Previous</button>
+        <button id="next" class="btn primary">Next</button>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="questions.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

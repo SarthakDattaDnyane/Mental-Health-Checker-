@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MindCheck — Result</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="center-shell">
+    <div class="card glass result-card">
+      <h2 id="resTitle">Your Result</h2>
+
+      <div class="meter-wrap">
+        <div class="meter">
+          <div id="meterFill" class="meter-fill">0%</div>
+        </div>
+      </div>
+
+      <div class="score-line">
+        <strong id="scorePct">0%</strong>
+        <span id="scoreLabel" class="muted">Calculating…</span>
+      </div>
+
+      <div id="advice" class="advice">
+        <!-- advice injected -->
+      </div>
+
+      <div class="row">
+        <button id="homeBtn" class="btn outline">Home</button>
+        <button id="shareBtn" class="btn primary">Save & Share</button>
+      </div>
+
+      <p class="muted small">If you feel at risk, contact local emergency services or a mental health professional.</p>
+    </div>
+  </main>
+
+  <script src="questions.js"></script>
+  <script>
+    // read saved payload if available, else show message
+    (function(){
+      const payload = JSON.parse(localStorage.getItem('mc_last_result') || 'null');
+      const lang = localStorage.getItem('mc_lang') || 'en';
+      const labels = {
+        en: {fit: 'Mentally Fit', mild: 'Mild stress', mod: 'Moderate risk', high: 'High risk — seek help'},
+        hi: {fit:'मानसिक रूप से स्वस्थ', mild:'हल्का तनाव', mod:'मध्यम जोखिम', high:'उच्च जोखिम — सहायता लें'},
+        mr: {fit:'मानसिकदृष्ट्या फिट', mild:'हलका ताण', mod:'मध्यम धोका', high:'उच्च धोका — मदत घ्या'}
+      };
+
+      const pctEl = document.getElementById('scorePct');
+      const labEl = document.getElementById('scoreLabel');
+      const meterFill = document.getElementById('meterFill');
+      const title = document.getElementById('resTitle');
+      const adviceEl = document.getElementById('advice');
+
+      if (!payload) {
+        title.innerText = lang === 'en' ? 'No saved result' : (lang==='hi'?'कोई सेव्ड परिणाम नहीं':'कोणताही सेव केलेला निकाल नाही');
+        pctEl.innerText = '—';
+        labEl.innerText = lang === 'en' ? 'Take the test first' : (lang==='hi'?'पहले टेस्ट दें':'सर्वप्रथम चाचणी द्या');
+        adviceEl.innerHTML = '';
+        meterFill.style.width = '6%';
+        meterFill.innerText = '—';
+        return;
+      }
+
+      // payload: {score, pct, labelKey, notes, lang, timestamp}
+      const { score, pct, labelKey, notes, timestamp } = payload;
+
+      // animate meter
+      let cur = 0;
+      const target = pct;
+      const step = Math.max(1, Math.floor(target/25));
+      const t = setInterval(() => {
+        cur += step;
+        if (cur >= target) { cur = target; clearInterval(t); }
+        meterFill.style.width = cur + '%';
+        meterFill.innerText = cur + '%';
+      }, 8);
+
+      pctEl.innerText = pct + '%';
+      labEl.innerText = labels[lang][labelKey];
+
+      // advice buckets
+      const adv = {
+        en: {
+          fit: [
+            'Great — keep healthy routines: sleep, nutrition, movement.',
+            'Short daily mindfulness (3–5 min) helps maintain balance.'
+          ],
+          mild: [
+            'Try brief breathing exercises twice daily.',
+            'Write a short log of triggers & small wins.'
+          ],
+          mod: [
+            'Consider talking to a counselor or trusted person.',
+            'Limit stimulants, increase regular sleep schedule.'
+          ],
+          high: [
+            'Seek professional help — therapist/psychiatrist.',
+            'If you feel unsafe, contact emergency services or a helpline.'
+          ]
+        },
+        hi: {
+          fit: ['बहुत अच्छा — स्वास्थ्यवर्धक दिनचर्या बनाए रखें।','छोटी माइंडफुलनेस मदद करती है।'],
+          mild: ['दिन में साँस अभ्यास करें।','ट्रिगर्स और छोटे लक्ष्यों को नोट करें।'],
+          mod: ['काउंसलर से बात करने पर विचार करें।','नींद और दिनचर्या नियंत्रित करें।'],
+          high: ['पेशेवर मदद लें।','यदि असुरक्षित महसूस करें, इमरजेंसी सेवाओं से संपर्क करें।']
+        },
+        mr: {
+          fit: ['छान — चांगली दिनचर्या ठेवा: झोप, आहार, हालचाल.','दररोज छोटे माइंडफुलनेस सत्र करा.'],
+          mild: ['दररोज श्वासाचे व्यायाम करा.','ट्रिगर्स आणि छोटे उद्दिष्टे नोंदवा.'],
+          mod: ['काउन्सलरशी संपर्क करण्याचा विचार करा.','झोप आणि नियमीत दिनचर्या ठेवा.'],
+          high: ['व्यावसायिक मदत घ्या.','असुरक्षित वाटल्यास आपत्कालीन सेवा संपर्क करा.']
+        }
+      };
+
+      const chosen = adv[lang][labelKey];
+      adviceEl.innerHTML = chosen.map(t => `<p>• ${t}</p>`).join('') +
+        (notes ? `<p class="muted"><strong>Notes:</strong> ${notes}</p>` : '');
+
+      // home / share actions
+      document.getElementById('homeBtn').addEventListener('click', () => window.location.href = 'index.html');
+      document.getElementById('shareBtn').addEventListener('click', () => {
+        // save last (already saved) and try web share or copy
+        const text = `${labels[lang][labelKey]} — ${pct}%\nScore: ${score}/45\nNotes: ${notes || '—'}`;
+        if (navigator.share) {
+          navigator.share({ title: 'MindCheck result', text }).catch(()=>{ alert('Share cancelled'); });
+        } else {
+          // fallback copy
+          navigator.clipboard?.writeText(text).then(()=> alert(lang==='en'?'Result copied to clipboard.':'प्रतिलिपि केली गेली.'));
+        }
+      });
+
+    })();
+  </script>
+</body>
+</html>

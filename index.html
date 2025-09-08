@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MindCheck — Home</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="center-shell">
+    <div class="card glass hero">
+      <h1 class="brand">🧠 MindCheck</h1>
+      <p class="lead">Quick self-assessment for mental well-being. Not a diagnosis — for awareness only.</p>
+
+      <div class="row">
+        <label for="lang" class="muted">Choose language / भाषा / भाषा निवडा</label>
+        <select id="lang" class="select">
+          <option value="en">English</option>
+          <option value="hi">हिन्दी</option>
+          <option value="mr">मराठी</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <button id="startBtn" class="btn primary">Start Assessment</button>
+        <button id="savedBtn" class="btn outline">View Last Result</button>
+      </div>
+
+      <p class="disclaimer">
+        This is a screening tool for awareness only. If you're worried, consult a professional.
+      </p>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('startBtn').addEventListener('click', () => {
+      const lang = document.getElementById('lang').value;
+      localStorage.setItem('mc_lang', lang);
+      // clear any previous in-progress answers
+      localStorage.removeItem('mc_answers');
+      localStorage.removeItem('mc_notes');
+      window.location.href = 'test.html';
+    });
+    document.getElementById('savedBtn').addEventListener('click', () => {
+      window.location.href = 'result.html';
+    });
+  </script>
+</body>
+</html>
